@@ -1,0 +1,37 @@
+name: Terraform Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Validate environments
+        run: |
+          for dir in terraform/environments/*/; do
+            if ls "$dir"*.tf >/dev/null 2>&1; then
+              echo "=== $dir ==="
+              terraform -chdir="$dir" init -backend=false
+              terraform -chdir="$dir" validate
+            else
+              echo "=== $dir (vide, skip) ==="
+            fi
+          done
+
+      - name: tfsec security scan
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          soft_fail: true
