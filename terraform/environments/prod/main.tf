@@ -22,3 +22,9 @@ module "network" {
   pods_cidr     = "10.4.0.0/14"
   services_cidr = "10.8.0.0/20"
 }
+
+module "iam" {
+  source     = "../../modules/iam"
+  project_id = var.project_id
+  name       = "prod"
+}
