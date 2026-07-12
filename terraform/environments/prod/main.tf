@@ -28,3 +28,20 @@ module "iam" {
   project_id = var.project_id
   name       = "prod"
 }
+
+variable "authorized_cidr" {
+  type        = string
+  description = "Ton IP publique en /32"
+}
+
+module "gke" {
+  source          = "../../modules/gke"
+  project_id      = var.project_id
+  name            = "gke-prod"
+  location        = var.zone
+  network         = module.network.network_name
+  subnetwork      = module.network.subnet_name
+  node_sa_email   = module.iam.gke_node_sa_email
+  authorized_cidr = var.authorized_cidr
+  node_count      = 2
+}
